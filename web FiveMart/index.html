@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FiveMart — Sistem Penjualan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- HALAMAN LOGIN -->
+  <div id="loginView" class="login-wrapper">
+    <button type="button" class="theme-toggle login-theme-btn" data-theme-toggle aria-label="Ganti tema">
+      <span class="theme-icon" aria-hidden="true"></span>
+      <span class="theme-label">Mode Gelap</span>
+    </button>
+
+    <div class="login-card">
+      <div class="login-accent"></div>
+      <div class="login-inner">
+        <div class="login-brand">
+          <span class="brand-badge">FM</span>
+          <div>
+            <h1>FiveMart</h1>
+            <p>Sistem Kasir &amp; Inventaris Toko</p>
+          </div>
+        </div>
+
+        <form id="loginForm" class="form-stack">
+          <div class="field">
+            <label for="loginUser">Username</label>
+            <input type="text" id="loginUser" placeholder="Nama kasir atau admin" autocomplete="off" required />
+          </div>
+          <div class="field">
+            <label for="loginPass">Password</label>
+            <input type="password" id="loginPass" placeholder="Masukkan password" required />
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">Masuk ke Sistem</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- APLIKASI UTAMA -->
+  <div id="appView" class="app-shell hidden">
+    <!-- NAVIGASI ATAS -->
+    <header class="navbar">
+      <div class="navbar-inner">
+        <div class="nav-left">
+          <div class="nav-brand">
+            <span class="brand-badge sm">FM</span>
+            <span class="brand-name">FiveMart</span>
+          </div>
+
+          <nav class="nav-tabs" aria-label="Menu utama">
+            <button class="nav-tab active" data-page="dashboard">Dashboard</button>
+            <button class="nav-tab" data-page="inventaris">Inventaris</button>
+            <button class="nav-tab" data-page="penjualan">Penjualan</button>
+          </nav>
+        </div>
+
+        <div class="nav-right">
+          <button type="button" class="theme-toggle" data-theme-toggle aria-label="Ganti tema">
+            <span class="theme-icon" aria-hidden="true"></span>
+            <span class="theme-label">Mode Gelap</span>
+          </button>
+
+          <div class="nav-divider"></div>
+
+          <div class="nav-user">
+            <span id="displayUsername">Kasir</span>
+            <button id="btnLogout" class="btn-text">Keluar</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- KONTEN UTAMA -->
+    <main class="main-content">
+      <div class="container">
+
+        <!-- ======================================= -->
+        <!-- HALAMAN 1: DASHBOARD                    -->
+        <!-- ======================================= -->
+        <section id="page-dashboard" class="page active">
+          <div class="page-header">
+            <div>
+              <h2 class="page-heading">Ringkasan Toko</h2>
+              <p class="page-meta" id="todayLabel">Hari ini</p>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-outline" data-goto="inventaris">+ Tambah Barang</button>
+              <button class="btn btn-primary" data-goto="penjualan">Catat Penjualan</button>
+            </div>
+          </div>
+
+          <!-- Ringkasan Utama -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span class="metric-label">Total Omzet</span>
+              <strong class="metric-num" id="dashTotalRevenue">Rp0</strong>
+              <span class="metric-foot">Penjualan kotor hari ini</span>
+            </div>
+
+            <div class="metric-card metric-highlight">
+              <span class="metric-label">Estimasi Laba</span>
+              <strong class="metric-num" id="dashTotalProfit">Rp0</strong>
+              <span class="metric-foot" id="dashProfitSub">Harga jual dikurangi modal</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">Barang Terjual</span>
+              <strong class="metric-num" id="dashTotalSold">0 pcs</strong>
+              <span class="metric-foot" id="dashTotalTx">0 transaksi tercatat</span>
+            </div>
+
+            <div class="metric-card">
+              <span class="metric-label">Stok Tersedia</span>
+              <strong class="metric-num" id="dashTotalStock">0 pcs</strong>
+              <span class="metric-foot" id="dashTotalJenis">0 jenis barang</span>
+            </div>
+          </div>
+
+          <!-- Grafik Penjualan per Jam -->
+          <div class="card section-gap">
+            <div class="card-head">
+              <div>
+                <h3>Aktivitas Penjualan per Jam</h3>
+                <p class="card-sub">Jumlah barang laku pada pukul 06:00 – 23:00</p>
+              </div>
+              <span class="peak-badge" id="peakHourText">Belum ada transaksi</span>
+            </div>
+            <div class="card-body">
+              <div class="chart-stage">
+                <div class="chart-guides" aria-hidden="true">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <div id="hourlyChart" class="chart-bars"></div>
+                <div id="chartEmptyNote" class="chart-empty-note">
+                  Grafik akan terisi otomatis setelah penjualan dicatat.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dua Tabel Ringkasan -->
+          <div class="two-col">
+            <div class="card">
+              <div class="card-head">
+                <h3>Ringkasan Inventaris</h3>
+                <button class="link-action" data-goto="inventaris">Kelola semua &rarr;</button>
+              </div>
+              <div class="table-wrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Barang</th>
+                      <th class="num">Harga</th>
+                      <th class="num">Stok</th>
+                      <th class="num">Laku</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashInvBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <h3>Penjualan Terakhir</h3>
+                <button class="link-action" data-goto="penjualan">Lihat riwayat &rarr;</button>
+              </div>
+              <div class="table-wrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Jam</th>
+                      <th>Barang</th>
+                      <th class="num">Qty</th>
+                      <th class="num">Omzet</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashSalesBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================= -->
+        <!-- HALAMAN 2: INVENTARIS BARANG            -->
+        <!-- ======================================= -->
+        <section id="page-inventaris" class="page">
+          <div class="page-header">
+            <div>
+              <h2 class="page-heading">Inventaris Barang</h2>
+              <p class="page-meta">Tambah stok baru dan pantau harga modal serta harga jual.</p>
+            </div>
+          </div>
+
+          <div class="workspace-grid">
+            <div class="card sticky-panel">
+              <div class="card-head">
+                <h3>Tambah Barang</h3>
+              </div>
+              <form id="formInventory" class="card-body form-stack">
+                <div class="field">
+                  <label for="invName">Nama Barang</label>
+                  <input type="text" id="invName" placeholder="Contoh: Teh Pucuk 350ml" required />
+                </div>
+
+                <div class="field-2">
+                  <div class="field">
+                    <label for="invCategory">Kategori</label>
+                    <select id="invCategory" required>
+                      <option value="minuman">Minuman</option>
+                      <option value="makanan">Makanan &amp; Mi</option>
+                      <option value="camilan">Camilan</option>
+                      <option value="harian">Kebutuhan Harian</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="invDate">Tanggal Masuk</label>
+                    <input type="date" id="invDate" required />
+                  </div>
+                </div>
+
+                <div class="field-2">
+                  <div class="field">
+                    <label for="invBuy">Harga Modal (Rp)</label>
+                    <input type="number" id="invBuy" min="0" step="100" placeholder="2500" required />
+                  </div>
+                  <div class="field">
+                    <label for="invSell">Harga Jual (Rp)</label>
+                    <input type="number" id="invSell" min="0" step="100" placeholder="3500" required />
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label for="invStock">Stok Awal (pcs)</label>
+                  <input type="number" id="invStock" min="1" placeholder="20" required />
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">Simpan ke Inventaris</button>
+              </form>
+            </div>
+
+            <div class="card">
+              <div class="card-head card-head-tools">
+                <div>
+                  <h3>Daftar Barang</h3>
+                  <p class="card-sub" id="invCountLabel">0 barang terdaftar</p>
+                </div>
+                <input type="search" id="invSearch" class="search-input" placeholder="Cari nama barang..." />
+              </div>
+              <div class="table-wrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>Nama Barang</th>
+                      <th>Kategori</th>
+                      <th>Masuk</th>
+                      <th class="num">Modal</th>
+                      <th class="num">Jual</th>
+                      <th class="num">Stok</th>
+                      <th class="num">Laku</th>
+                      <th class="num">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody id="fullInvBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================= -->
+        <!-- HALAMAN 3: CATAT PENJUALAN              -->
+        <!-- ======================================= -->
+        <section id="page-penjualan" class="page">
+          <div class="page-header">
+            <div>
+              <h2 class="page-heading">Catat Penjualan</h2>
+              <p class="page-meta">Input barang laku untuk memotong stok dan memperbarui laporan.</p>
+            </div>
+          </div>
+
+          <div class="workspace-grid">
+            <div class="card sticky-panel">
+              <div class="card-head">
+                <h3>Transaksi Baru</h3>
+              </div>
+              <form id="formSale" class="card-body form-stack">
+                <div class="field">
+                  <label for="saleItem">Pilih Barang</label>
+                  <select id="saleItem" required></select>
+                </div>
+
+                <div class="field-2">
+                  <div class="field">
+                    <label for="saleQty">Jumlah (pcs)</label>
+                    <input type="number" id="saleQty" min="1" value="1" required />
+                  </div>
+                  <div class="field">
+                    <label for="saleHour">Jam Transaksi</label>
+                    <select id="saleHour" required></select>
+                  </div>
+                </div>
+
+                <div class="receipt-box">
+                  <div class="receipt-row">
+                    <span>Stok saat ini</span>
+                    <strong id="calcStock">-</strong>
+                  </div>
+                  <div class="receipt-row">
+                    <span>Sisa setelah laku</span>
+                    <strong id="calcRemain">-</strong>
+                  </div>
+                  <div class="receipt-divider"></div>
+                  <div class="receipt-row">
+                    <span>Total bayar</span>
+                    <strong class="receipt-total" id="calcRevenue">Rp0</strong>
+                  </div>
+                  <div class="receipt-row">
+                    <span>Estimasi laba</span>
+                    <strong class="receipt-profit" id="calcProfit">Rp0</strong>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full" id="btnSubmitSale">Simpan Transaksi</button>
+              </form>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <h3>Riwayat Penjualan</h3>
+                  <p class="card-sub" id="salesCountLabel">0 transaksi</p>
+                </div>
+                <span class="mono-tag" id="salesTotalTag">Total: 0 pcs</span>
+              </div>
+              <div class="table-wrap">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>No</th>
+                      <th>Jam</th>
+                      <th>Nama Barang</th>
+                      <th class="num">Qty</th>
+                      <th class="num">Omzet</th>
+                      <th class="num">Laba</th>
+                    </tr>
+                  </thead>
+                  <tbody id="fullSalesBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- NOTIFIKASI -->
+  <div id="notifBar" class="notif-bar" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
